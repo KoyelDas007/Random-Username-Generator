@@ -1,0 +1,71 @@
+
+import random
+import string
+
+# Lists of adjectives and nouns
+adjectives = ["Cool", "Happy", "Quick", "Bright", "Silent", "Fierce"]
+nouns = ["Tiger", "Dragon", "Falcon", "Phoenix", "Wolf", "Eagle"]
+
+# Function to generate random username
+def generate_username(include_numbers=False, include_special=False, length=None):
+    adjective = random.choice(adjectives)
+    noun = random.choice(nouns)
+
+    username = adjective + noun
+    
+    # Add random number
+    if include_numbers:
+        username += str(random.randint(100, 999))
+
+    # Add random special character
+    if include_special:
+        username += random.choice(string.punctuation)
+
+    # Adjust length if specified (either trim or pad the username)
+    if length:
+        if len(username) > length:
+            username = username[:length]
+        elif len(username) < length:
+            username += ''.join(random.choices(string.ascii_letters + string.digits, k=length - len(username)))
+
+    return username
+
+# Function to save usernames to a file
+def save_usernames_to_file(usernames, filename="usernames.txt"):
+    with open(filename, 'a') as file:
+        for username in usernames:
+            file.write(username + '\n')
+    print(f"Usernames saved to {filename}")
+
+# Main program
+def main():
+    print("Welcome to the Random Username Generator!")
+    
+    try:
+        num_usernames = int(input("How many usernames would you like to generate? "))
+    except ValueError:
+        print("Invalid input! Please enter a number.")
+        return
+    
+    include_numbers = input("Would you like to include numbers in usernames? (yes/no) ").lower() == 'yes'
+    include_special = input("Would you like to include special characters in usernames? (yes/no) ").lower() == 'yes'
+    
+    try:
+        length_input = input("Enter desired username length (or press Enter to skip): ")
+        length = int(length_input) if length_input else None
+    except ValueError:
+        print("Invalid input! Using default length.")
+        length = None
+
+    usernames = []
+    for _ in range(num_usernames):
+        usernames.append(generate_username(include_numbers, include_special, length))
+    
+    print("\nGenerated Usernames:")
+    for username in usernames:
+        print(username)
+    
+    save_usernames_to_file(usernames)
+
+if __name__ == "__main__":
+    main()
