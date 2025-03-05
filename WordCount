@@ -1,0 +1,30 @@
+def count_words(text):
+    """
+    This function takes a string of text, splits it into words, 
+    and returns the number of words in the text.
+    """
+    words = text.split()  # Splitting the text by spaces
+    return len(words)
+
+def main():
+    """
+    The main function prompts the user for input, checks if it's empty, 
+    and prints the word count using the count_words function.
+    """
+    
+    user_input = input("Enter a sentence or paragraph: ").strip()
+    
+    
+    if not user_input:
+        print("Error: No text entered. Please try again.")
+        return
+    
+    
+    word_count = count_words(user_input)
+    
+    
+    print(f"Word Count: {word_count}")
+
+
+if __name__ == "__main__":
+    main()
