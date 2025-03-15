@@ -1,71 +1,108 @@
+import json
+import datetime
 
-import random
-import string
+# File to store expenses
+expense_file = "expenses.json"
 
-# Lists of adjectives and nouns
-adjectives = ["Cool", "Happy", "Quick", "Bright", "Silent", "Fierce"]
-nouns = ["Tiger", "Dragon", "Falcon", "Phoenix", "Wolf", "Eagle"]
-
-# Function to generate random username
-def generate_username(include_numbers=False, include_special=False, length=None):
-    adjective = random.choice(adjectives)
-    noun = random.choice(nouns)
-
-    username = adjective + noun
-    
-    # Add random number
-    if include_numbers:
-        username += str(random.randint(100, 999))
-
-    # Add random special character
-    if include_special:
-        username += random.choice(string.punctuation)
-
-    # Adjust length if specified (either trim or pad the username)
-    if length:
-        if len(username) > length:
-            username = username[:length]
-        elif len(username) < length:
-            username += ''.join(random.choices(string.ascii_letters + string.digits, k=length - len(username)))
-
-    return username
-
-# Function to save usernames to a file
-def save_usernames_to_file(usernames, filename="usernames.txt"):
-    with open(filename, 'a') as file:
-        for username in usernames:
-            file.write(username + '\n')
-    print(f"Usernames saved to {filename}")
-
-# Main program
-def main():
-    print("Welcome to the Random Username Generator!")
-    
+# Load existing data or create a new file if it doesn't exist
+def load_expenses():
     try:
-        num_usernames = int(input("How many usernames would you like to generate? "))
-    except ValueError:
-        print("Invalid input! Please enter a number.")
+        with open(expense_file, "r") as file:
+            return json.load(file)
+    except FileNotFoundError:
+        return []
+
+# Save expenses to the file
+def save_expenses(expenses):
+    with open(expense_file, "w") as file:
+        json.dump(expenses, file, indent=4)
+
+# Add a new expense
+def add_expense():
+    date = input("Enter the date (YYYY-MM-DD) of the expense: ")
+    amount = float(input("Enter the amount spent: "))
+    category = input("Enter the category (e.g., Food, Transportation, Entertainment): ")
+    description = input("Enter a brief description: ")
+
+    # Create an expense dictionary
+    expense = {
+        "date": date,
+        "amount": amount,
+        "category": category,
+        "description": description
+    }
+
+    # Load expenses, add the new expense, and save it
+    expenses = load_expenses()
+    expenses.append(expense)
+    save_expenses(expenses)
+    print("Expense added successfully!")
+
+# View expenses for a specific month and year
+def view_expenses():
+    month = input("Enter the month (MM) to view expenses: ")
+    year = input("Enter the year (YYYY) to view expenses: ")
+
+    expenses = load_expenses()
+    filtered_expenses = [expense for expense in expenses if expense["date"].startswith(f"{year}-{month}")]
+
+    if not filtered_expenses:
+        print(f"No expenses found for {month}/{year}.")
         return
-    
-    include_numbers = input("Would you like to include numbers in usernames? (yes/no) ").lower() == 'yes'
-    include_special = input("Would you like to include special characters in usernames? (yes/no) ").lower() == 'yes'
-    
-    try:
-        length_input = input("Enter desired username length (or press Enter to skip): ")
-        length = int(length_input) if length_input else None
-    except ValueError:
-        print("Invalid input! Using default length.")
-        length = None
 
-    usernames = []
-    for _ in range(num_usernames):
-        usernames.append(generate_username(include_numbers, include_special, length))
-    
-    print("\nGenerated Usernames:")
-    for username in usernames:
-        print(username)
-    
-    save_usernames_to_file(usernames)
+    total_amount = 0
+    print(f"\nExpenses for {month}/{year}:")
+    print("-" * 40)
+    for expense in filtered_expenses:
+        print(f"Date: {expense['date']}, Amount: ${expense['amount']}, Category: {expense['category']}, Description: {expense['description']}")
+        total_amount += expense['amount']
+    print("-" * 40)
+    print(f"Total Expenses: ${total_amount}\n")
+
+# View total expenses by category
+def view_expenses_by_category():
+    expenses = load_expenses()
+    category_totals = {}
+
+    for expense in expenses:
+        category = expense['category']
+        if category in category_totals:
+            category_totals[category] += expense['amount']
+        else:
+            category_totals[category] = expense['amount']
+
+    if not category_totals:
+        print("No expenses found.")
+        return
+
+    print("\nTotal Expenses by Category:")
+    print("-" * 40)
+    for category, total in category_totals.items():
+        print(f"{category}: ${total}")
+    print("-" * 40)
+
+# Main function to run the expense tracker
+def main():
+    while True:
+        print("\nExpense Tracker Menu:")
+        print("1. Add an Expense")
+        print("2. View Expenses by Month")
+        print("3. View Expenses by Category")
+        print("4. Exit")
+
+        choice = input("Choose an option: ")
+
+        if choice == "1":
+            add_expense()
+        elif choice == "2":
+            view_expenses()
+        elif choice == "3":
+            view_expenses_by_category()
+        elif choice == "4":
+            print("Exiting the Expense Tracker. Goodbye!")
+            break
+        else:
+            print("Invalid option. Please try again.")
 
 if __name__ == "__main__":
     main()
